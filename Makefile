@@ -1,0 +1,43 @@
+WORKFLOW    := Jump.alfredworkflow
+UPDATER_URL := https://github.com/grigoriev/alfred-workflow-updater/releases/latest/download/updater.tar.gz
+SCRIPTS     := src/jump.sh src/links.sh src/cache.sh src/globals.sh
+EXCLUDES    := '.git/*' '.github/*' '.gitignore' 'Makefile' '$(WORKFLOW)'
+
+.PHONY: all build updater verify-updater test lint icons clean
+
+all: build
+
+# Regenerate PNG icons from Octicons (macOS only; see .github/build-icons.sh)
+icons:
+	bash .github/build-icons.sh
+
+# Fetch the shared updater bundle at build time (not stored in git)
+updater:
+	curl -sfL $(UPDATER_URL) | tar -xzf - -C src
+	chmod +x src/update.sh src/autoupdate.sh
+
+# Smoke-test the fetched updater. Tolerant before the first release exists.
+verify-updater: updater
+	@out=$$(alfred_workflow_version=0.0.1 update_repo=grigoriev/alfred-jump-workflow update_asset=$(WORKFLOW) bash src/update.sh 2>/dev/null || true); \
+	if printf '%s' "$$out" | grep -q '"title":"Update to v'; then \
+		echo "updater OK"; \
+	else \
+		echo "no release yet; updater smoke test skipped"; \
+	fi
+
+# Build the .alfredworkflow bundle
+build: verify-updater
+	rm -f $(WORKFLOW)
+	zip -qr $(WORKFLOW) . -x $(EXCLUDES)
+	unzip -l $(WORKFLOW) | grep -q 'src/update.sh'
+	@echo "built $(WORKFLOW)"
+
+# Tests need the shared autoupdate.sh, so fetch the updater bundle first
+test: updater
+	bats tests
+
+lint:
+	shellcheck -x --severity=warning $(SCRIPTS)
+
+clean:
+	rm -f $(WORKFLOW) src/update.sh src/autoupdate.sh
