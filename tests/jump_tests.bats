@@ -94,6 +94,87 @@ setup() {
   grep -q "folder" "$OPEN_LOG"
 }
 
+@test "jump.sh: run unpin removes the pin" {
+  bash -c ". src/jump.sh run \"pin $LINKS/work/Jira.md\""
+  run bash -c ". src/jump.sh run \"unpin $LINKS/work/Jira.md\""
+  run bash -c '. src/jump.sh list ""'
+  echo "$output" | jq -e '[.items[].title] | index("★ Jira") == null' >/dev/null
+}
+
+@test "jump.sh: run open-folder reveals the folder" {
+  export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
+  run bash -c '. src/jump.sh run "open-folder"'
+  grep -qF "$LINKS" "$OPEN_LOG"
+}
+
+@test "jump.sh: run rebuild drops the index" {
+  bash -c '. src/jump.sh list "" >/dev/null'
+  [ -f "$alfred_workflow_cache/links.json" ]
+  run bash -c '. src/jump.sh run "rebuild"'
+  [ ! -f "$alfred_workflow_cache/links.json" ]
+}
+
+@test "jump.sh: run autoupdate toggles the flag" {
+  run bash -c '. src/jump.sh run "autoupdate on"'
+  [ -f "$alfred_workflow_data/autoupdate" ]
+}
+
+@test "jump.sh: run edit-folder seeds the config when missing" {
+  rm -f "$alfred_workflow_data/folder"
+  export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
+  run bash -c '. src/jump.sh run "edit-folder"'
+  [ -f "$alfred_workflow_data/folder" ]
+  grep -q "folder" "$OPEN_LOG"
+}
+
+@test "jump.sh: run ignores an unknown action" {
+  run bash -c '. src/jump.sh run "bogus payload"'
+  [ "$status" -eq 0 ]
+}
+
+@test "jump.sh: > add with no spec shows the format hint" {
+  run bash -c '. src/jump.sh list "> add"'
+  echo "$output" | jq -e '.items[0].title == "Add a link"' >/dev/null
+}
+
+@test "jump.sh: > update delegates to the updater when present" {
+  cat > src/update.sh <<'STUB'
+#!/bin/bash
+printf '{"items":[{"title":"updater ran"}]}'
+STUB
+  run bash -c '. src/jump.sh list "> update"'
+  rm -f src/update.sh
+  echo "$output" | jq -e '.items[0].title == "updater ran"' >/dev/null
+}
+
+@test "jump.sh: > update shows a hint when the updater is missing" {
+  rm -f src/update.sh
+  run bash -c '. src/jump.sh list "> update"'
+  echo "$output" | jq -e '.items[0].title == "Updater unavailable"' >/dev/null
+}
+
+@test "jump.sh: run installs an update from a url" {
+  export INSTALL_LOG="$BATS_TEST_TMPDIR/install.log"
+  cat > src/update.sh <<'STUB'
+#!/bin/bash
+echo "install [$1]" >> "$INSTALL_LOG"
+STUB
+  run bash -c '. src/jump.sh run "https://example.com/Jump.alfredworkflow"'
+  rm -f src/update.sh
+  grep -q 'install \[https://example.com/Jump.alfredworkflow\]' "$INSTALL_LOG"
+}
+
+@test "jump.sh: shows an update banner when one is pending" {
+  : > "$alfred_workflow_data/autoupdate"
+  cat > src/update.sh <<'STUB'
+#!/bin/bash
+printf '{"items":[{"title":"Update to v9","arg":"https://example.com/Jump.alfredworkflow"}]}'
+STUB
+  run bash -c '. src/jump.sh list ""'
+  rm -f src/update.sh
+  echo "$output" | jq -e '[.items[].title] | index("Update available") != null' >/dev/null
+}
+
 @test "jump.sh: with no config it falls back to the default folder" {
   rm -f "$alfred_workflow_data/folder"
   run bash -c '. src/jump.sh list ""'
