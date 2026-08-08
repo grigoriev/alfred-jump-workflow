@@ -36,7 +36,7 @@ globals_menu() {
   else
     global_item "sort order" "$filter" "Sort: Frecency" "Switch to alphabetical" "sort alphabet" "yes" "$ICON_GEAR" ""
   fi
-  global_item "add link"      "$filter" "Add a link"        "Continue: url | title @category #tags" ""            "no"  "$ICON_ADD"    "> add "
+  global_item "add link"      "$filter" "Add a link"        "Continue: url | title @category #tags ! command" ""  "no"  "$ICON_ADD"    "> add "
   global_item "set folder"    "$filter" "Set links folder"  "Edit the folder path that holds links"  "edit-folder" "yes" "$ICON_FOLDER" ""
   global_item "open folder"   "$filter" "Open links folder" "Reveal it in Finder"                    "open-folder" "yes" "$ICON_FOLDER" ""
   global_item "rebuild index" "$filter" "Rebuild index"     "Re-scan the links folder"               "rebuild"     "yes" "$ICON_GEAR"   ""

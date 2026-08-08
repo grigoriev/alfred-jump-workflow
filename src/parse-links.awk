@@ -14,9 +14,10 @@ FNR == 1 {
   } else {
     m = split(dir, dparts, "/"); category = dparts[m]
   }
-  url = ""; tags = ""
+  url = ""; tags = ""; run = ""
 }
 /^[ \t]*url:/  { line = $0; sub(/^[ \t]*url:[ \t]*/, "", line);  url = line }
 /^[ \t]*tags:/ { line = $0; sub(/^[ \t]*tags:[ \t]*/, "", line); tags = line }
+/^[ \t]*run:/  { line = $0; sub(/^[ \t]*run:[ \t]*/, "", line);  run = line }
 END { if (path != "") emit() }
-function emit() { printf "%s\t%s\t%s\t%s\t%s\n", title, category, url, tags, path }
+function emit() { printf "%s\t%s\t%s\t%s\t%s\t%s\n", title, category, url, tags, run, path }

@@ -64,6 +64,21 @@ setup() {
   echo "$output" | jq -e '.items[0].mods.alt.arg | startswith("unpin ")' >/dev/null
 }
 
+@test "jump.sh: a run link becomes an iTerm action with a terminal icon" {
+  printf 'url: ~/proj\nrun: claude\n' > "$LINKS/work/Claude.md"
+  run bash -c '. src/jump.sh list "claude"'
+  echo "$output" | jq -e '.items[0].arg | startswith("iterm ") and endswith("/work/Claude.md")' >/dev/null
+  echo "$output" | jq -e '.items[0].icon.path == "icons/terminal.png"' >/dev/null
+  echo "$output" | jq -e '.items[0].subtitle | contains("$ claude")' >/dev/null
+}
+
+@test "jump.sh: run iterm reads the file and invokes osascript" {
+  printf 'url: ~/proj\nrun: claude\n' > "$LINKS/work/Claude.md"
+  export OSASCRIPT_LOG="$BATS_TEST_TMPDIR/osa.log"
+  run bash -c ". src/jump.sh run \"iterm $LINKS/work/Claude.md\""
+  grep -q "claude" "$OSASCRIPT_LOG"
+}
+
 @test "jump.sh: a link offers a pin modifier" {
   run bash -c '. src/jump.sh list "jira"'
   echo "$output" | jq -e '.items[0].mods.alt.arg | startswith("pin ") and endswith("/work/Jira.md")' >/dev/null
@@ -92,6 +107,14 @@ setup() {
   export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
   run bash -c '. src/jump.sh run "open ~/project"'
   grep -qxF "$HOME/project" "$OPEN_LOG"
+  run bash -c '. src/jump.sh run "open ~"'
+  grep -qxF "$HOME" "$OPEN_LOG"
+}
+
+@test "jump.sh: run open keeps literal dollars that are not variables" {
+  export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
+  run bash -c '. src/jump.sh run "open https://x.com/a\$/b\$1c"'
+  grep -qxF 'https://x.com/a$/b$1c' "$OPEN_LOG"
 }
 
 @test "jump.sh: run open expands environment variables" {
