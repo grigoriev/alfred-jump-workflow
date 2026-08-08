@@ -125,7 +125,8 @@ unpin_link() {
 
 # Trim surrounding whitespace and collapse runs of spaces.
 trim() {
-  printf '%s' "$1" | awk '{ $1 = $1; print }'
+  local text="$1"
+  printf '%s' "$text" | awk '{ $1 = $1; print }'
   return 0
 }
 
