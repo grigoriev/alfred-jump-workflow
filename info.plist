@@ -123,7 +123,7 @@
 				<key>action</key>
 				<integer>0</integer>
 				<key>argument</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>focusedappvariable</key>
 				<false/>
 				<key>focusedappvariablename</key>
@@ -131,15 +131,13 @@
 				<key>hotkey</key>
 				<integer>49</integer>
 				<key>hotmod</key>
-				<integer>524288</integer>
+				<integer>1835008</integer>
 				<key>hotstring</key>
-				<string>␣</string>
+				<string>Space</string>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
 				<integer>0</integer>
-				<key>relatedApps</key>
-				<array/>
 				<key>relatedAppsMode</key>
 				<integer>0</integer>
 			</dict>

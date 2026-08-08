@@ -32,10 +32,12 @@ jump > add <url> | <title> @category #tag1 #tag2 ! command
 Enter opens the link. On a link, <kbd>⌘</kbd> deletes it and <kbd>⌥</kbd> pins it
 to the top (marked with a star).
 
-The workflow ships a hotkey trigger wired to the list. Assign a combo to it (for
-example <kbd>⌥</kbd><kbd>Space</kbd>) in the workflow editor to open the list from
-anywhere, without typing the keyword. Alfred does not carry hotkey bindings across
-import, so you set it once after installing.
+The workflow ships a hotkey trigger wired to the list, suggesting
+<kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>Space</kbd>. Alfred clears an imported
+workflow's hotkey on install, on purpose, so it cannot clash with your existing
+hotkeys. So assign a combo once: double-click the Hotkey object in the workflow
+editor and press your keys. Pick a combo with a modifier, not a bare
+<kbd>⌥</kbd><kbd>Space</kbd> (that types a non-breaking space, not a hotkey).
 
 ## What you can open
 
