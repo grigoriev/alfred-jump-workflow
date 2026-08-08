@@ -32,6 +32,9 @@ jump > add <url> | <title> @category #tag1 #tag2
 Enter opens the link. On a link, <kbd>⌘</kbd> deletes it and <kbd>⌥</kbd> pins it
 to the top (marked with a star).
 
+Press <kbd>⌥</kbd><kbd>Space</kbd> (configurable in the workflow editor) to open
+the list from anywhere, without typing the keyword.
+
 ## Storage
 
 Links live in plain files under a folder, `~/.jump` by default (created on first
