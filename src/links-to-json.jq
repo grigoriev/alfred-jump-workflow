@@ -9,5 +9,6 @@ split("\n")
     category: .[1],
     url: .[2],
     tags: ((.[3] // "") | gsub(","; " ") | split(" ") | map(select(length > 0))),
-    path: .[4]
+    run: (.[4] // ""),
+    path: .[5]
   })

@@ -3,16 +3,18 @@
 # in "title category tags url". Pinned links are marked with a star and sorted to
 # the top; the rest are ordered by the chosen sort. Enter opens the url, cmd
 # deletes the file, alt pins or unpins it.
-# --arg q query  --arg icon link icon  --argjson pinned a list of pinned paths
-# --argjson frecency a map url -> {n, t}  --arg sort "frecency" | "alphabet".
+# --arg q query  --arg icon link icon  --arg icon_run terminal icon
+# --argjson pinned a list of pinned paths  --argjson frecency a map url -> {n, t}
+# --arg sort "frecency" | "alphabet".
 def words($s): ($s | ascii_downcase | [splits("[[:space:]]+")] | map(select(length > 0)));
 [ .[]
-  | ((.title + " " + .category + " " + (.tags | join(" ")) + " " + .url) | ascii_downcase) as $hay
+  | ((.title + " " + .category + " " + (.tags | join(" ")) + " " + .url + " " + (.run // "")) | ascii_downcase) as $hay
   | select(words($q) | all(. as $w | $hay | contains($w)))
   | . + {
       _pinned: ((.path as $p | ($pinned | index($p))) != null),
       _n: (($frecency[.url].n) // 0),
-      _t: (($frecency[.url].t) // 0)
+      _t: (($frecency[.url].t) // 0),
+      _run: ((.run // "") != "")
     }
 ]
 | (if $sort == "alphabet"
@@ -23,9 +25,10 @@ def words($s): ($s | ascii_downcase | [splits("[[:space:]]+")] | map(select(leng
 | map({
     title: (if ._pinned then "★ " + .title else .title end),
     subtitle: (.category + "  ·  " + .url
+               + (if ._run then "  ·  $ " + .run else "" end)
                + (if (.tags | length) > 0 then "  ·  " + (.tags | map("#" + .) | join(" ")) else "" end)),
-    arg: ("open " + .url),
-    icon: { path: $icon },
+    arg: (if ._run then "iterm " + .path else "open " + .url end),
+    icon: { path: (if ._run then $icon_run else $icon end) },
     mods: {
       cmd: { valid: true, arg: ("delete " + .path), subtitle: "Delete this link" },
       alt: (if ._pinned

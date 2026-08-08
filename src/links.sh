@@ -55,6 +55,10 @@ index_fresh() {
   folder="$(links_folder)"
   index="$(links_index)"
   [[ -f "$index" ]] || return 1
+  # A newer parser means a workflow update changed the record format, so the
+  # cached index must be rebuilt even if the links folder has not changed.
+  [[ src/parse-links.awk -nt "$index" ]] && return 1
+  [[ src/links-to-json.jq -nt "$index" ]] && return 1
   [[ -n "$folder" && -d "$folder" ]] || return 0
   [[ -z "$(find "$folder" -newer "$index" -print -quit 2>/dev/null)" ]]
 }
@@ -123,6 +127,33 @@ unpin_link() {
   return 0
 }
 
+# iTerm session ids: a JSON object mapping a "folder :: command" marker to the
+# id of the iTerm2 session opened for it, so a repeat launch can focus it.
+iterm_file() {
+  printf '%s/iterm.json' "${alfred_workflow_data:-.}"
+  return 0
+}
+
+# Print the saved session id for a marker, or nothing.
+iterm_session_id() {
+  local marker="$1" file
+  file="$(iterm_file)"
+  [[ -f "$file" ]] || return 0
+  jq -r --arg m "$marker" '.[$m] // ""' < "$file" 2>/dev/null
+  return 0
+}
+
+# Save the session id for a marker.
+iterm_set_session_id() {
+  local marker="$1" id="$2" file data
+  file="$(iterm_file)"
+  mkdir -p "${alfred_workflow_data:-.}"
+  data="$(cat "$file" 2>/dev/null || echo '{}')"
+  printf '%s' "$data" | jq -c --arg m "$marker" --arg i "$id" '.[$m] = $i' > "$file.tmp" 2>/dev/null \
+    && mv "$file.tmp" "$file"
+  return 0
+}
+
 # Trim surrounding whitespace and collapse runs of spaces.
 trim() {
   local text="$1"
@@ -130,12 +161,19 @@ trim() {
   return 0
 }
 
-# Create a link file from "url | title @category #tags". Category defaults to
-# "General", the title to the url's host. The folder is created as needed.
+# Create a link file from "url | title @category #tags ! command". The trailing
+# "! command" is optional and becomes a run: line (opens in iTerm2). Category
+# defaults to "General", the title to the url's host or path. The folder is
+# created as needed.
 add_link() {
-  local spec="$1" folder url meta category tags title word dir safe file
+  local spec="$1" folder url meta category tags title run word dir safe file
   folder="$(links_folder)"
   [[ -n "$folder" ]] || return 1
+  run=""
+  if [[ "$spec" == *"!"* ]]; then
+    run="$(trim "${spec#*!}")"
+    spec="${spec%%!*}"
+  fi
   url="$(trim "${spec%%|*}")"
   [[ -n "$url" ]] || return 1
   meta=""
@@ -154,7 +192,13 @@ add_link() {
   done
   title="$(trim "$title")"
   tags="$(trim "$tags")"
-  [[ -n "$title" ]] || title="$(printf '%s' "$url" | sed -E 's#^[a-z]+://##; s#/.*##')"
+  if [[ -z "$title" ]]; then
+    case "$url" in
+      *"://"*) title="$(printf '%s' "$url" | sed -E 's#^[a-z]+://##; s#/.*##')" ;;
+      *)       title="${url%/}"; title="${title##*/}" ;;
+    esac
+  fi
+  [[ -n "$title" ]] || title="link"
   dir="$folder/$category"
   mkdir -p "$dir"
   safe="$(printf '%s' "$title" | tr '/' '-')"
@@ -162,6 +206,7 @@ add_link() {
   {
     printf 'url: %s\n' "$url"
     [[ -n "$tags" ]] && printf 'tags: %s\n' "$tags"
+    [[ -n "$run" ]] && printf 'run: %s\n' "$run"
   } > "$file"
   return 0
 }

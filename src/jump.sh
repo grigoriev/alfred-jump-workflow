@@ -66,6 +66,50 @@ expand_path() {
   return 0
 }
 
+# Open a link file's "run:" command in iTerm2 in its "url:" folder, or switch to
+# it if a session for the same folder and command is already open. $1 is the link
+# file path. The session name is tagged so the next launch can find and focus it.
+run_iterm() {
+  local path="$1" url cmd folder marker savedid newid
+  url="$(grep -E '^[[:space:]]*url:' "$path" 2>/dev/null | head -1 | sed -E 's/^[[:space:]]*url:[[:space:]]*//')"
+  cmd="$(grep -E '^[[:space:]]*run:' "$path" 2>/dev/null | head -1 | sed -E 's/^[[:space:]]*run:[[:space:]]*//')"
+  [[ -n "$url" && -n "$cmd" ]] || return 0
+  record_open "$url"
+  folder="$(expand_path "$url")"
+  marker="$folder :: $cmd"
+  savedid="$(iterm_session_id "$marker")"
+  newid="$(osascript - "$folder" "$cmd" "$savedid" <<'APPLESCRIPT'
+on run argv
+  set thePath to item 1 of argv
+  set theCmd to item 2 of argv
+  set savedId to item 3 of argv
+  tell application "iTerm"
+    activate
+    if savedId is not "" then
+      repeat with w in windows
+        repeat with t in tabs of w
+          repeat with s in sessions of t
+            if (id of s) is savedId then
+              select w
+              tell t to select
+              return ""
+            end if
+          end repeat
+        end repeat
+      end repeat
+    end if
+    set newWin to (create window with default profile)
+    set theSession to (current session of newWin)
+    tell theSession to write text ("cd " & quoted form of thePath & " && " & theCmd)
+    return (id of theSession)
+  end tell
+end run
+APPLESCRIPT
+)"
+  [[ -n "$newid" ]] && iterm_set_session_id "$marker" "$newid"
+  return 0
+}
+
 # Run mode: dispatch the item action.
 if [[ "$mode" == "run" ]]; then
   action="${query%% *}"
@@ -73,6 +117,7 @@ if [[ "$mode" == "run" ]]; then
   payload="${payload# }"
   case "$action" in
     open)        open "$(expand_path "$payload")"; record_open "$payload" ;;
+    iterm)       run_iterm "$payload" ;;
     delete)      rm -f "$payload"; alfred_search "jump " ;;
     pin)         pin_link "$payload"; alfred_search "jump " ;;
     unpin)       unpin_link "$payload"; alfred_search "jump " ;;
@@ -103,7 +148,7 @@ if [[ "$query" == ">"* ]]; then
     spec="${sub#add}"
     spec="${spec# }"
     if [[ -z "$spec" ]]; then
-      add_result "" "" "Add a link" "Type: url | title @category #tags" "$ICON_ADD" "no"
+      add_result "" "" "Add a link" "Type: url | title @category #tags ! command" "$ICON_ADD" "no"
     else
       add_result "" "add-link $spec" "Add this link" "$spec" "$ICON_ADD" "yes"
     fi
@@ -124,7 +169,7 @@ pinned="$(pinned_json)"
 frecency="$(frecency_json)"
 sort="$(get_pref sort 0)"
 [[ -n "$sort" ]] || sort="frecency"
-items="$(jq -c -f src/filter-links.jq --arg q "$query" --arg icon "$ICON_LINK" \
+items="$(jq -c -f src/filter-links.jq --arg q "$query" --arg icon "$ICON_LINK" --arg icon_run "$ICON_TERMINAL" \
   --argjson pinned "$pinned" --argjson frecency "$frecency" --arg sort "$sort" <<< "$index" 2>/dev/null)"
 if [[ -z "$items" || "$items" == "[]" ]]; then
   add_result "" "" "No links found" "Add one with jump > add" "$ICON_LINK" "no"

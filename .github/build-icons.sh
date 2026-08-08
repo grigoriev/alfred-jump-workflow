@@ -36,7 +36,7 @@ render() {
 # name:octicon:color
 icons="link:link-24:$GRAY tag:tag-24:$GRAY folder:file-directory-24:$GRAY \
 add:plus-circle-24:$GREEN trash:trash-24:$RED gear:gear-24:$GRAY \
-search:search-24:$GRAY update:sync-24:$BLUE"
+search:search-24:$GRAY update:sync-24:$BLUE terminal:terminal-24:$GRAY"
 
 echo "generating item icons..."
 for entry in $icons; do

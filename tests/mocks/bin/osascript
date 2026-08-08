@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "${@: -1}" >> "${OSASCRIPT_LOG:-/dev/null}"
+echo "$@" >> "${OSASCRIPT_LOG:-/dev/null}"
