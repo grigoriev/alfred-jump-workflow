@@ -35,6 +35,22 @@ to the top (marked with a star).
 Press <kbd>⌥</kbd><kbd>Space</kbd> (configurable in the workflow editor) to open
 the list from anywhere, without typing the keyword.
 
+## What you can open
+
+The `url:` line is handed to macOS `open`, so a link is not limited to the web:
+
+- **Web pages** - `https://...`, routed by your default browser.
+- **Files and folders** - `~/project`, `$HOME/notes.md`, `/Applications` (a
+  leading `~` and `$VAR` / `${VAR}` are expanded, so store paths naturally).
+- **Applications** - a full bundle path, `/Applications/Xcode.app`.
+- **Deep links and url schemes** - jump inside an app:
+  - `slack://channel?team=...&id=...`
+  - `obsidian://open?vault=...&file=...`
+  - `vscode://file/Users/you/project`
+  - `x-apple.systempreferences:com.apple.preference.network`
+  - `things:///`, `raycast://`, `spotify:`, `mailto:`, `tel:`, and any custom
+    scheme an installed app registers.
+
 ## Storage
 
 Links live in plain files under a folder, `~/.jump` by default (created on first

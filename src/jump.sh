@@ -30,13 +30,49 @@ APPLESCRIPT
   return 0
 }
 
+# Expand a leading ~ and $VAR / ${VAR} in a value, so a stored link can point at
+# a file or folder like "~/project" or "$HOME/notes". Done by hand, never with
+# eval, so a stored value can never run a command. Web urls and app paths pass
+# through unchanged.
+expand_path() {
+  local value="$1" out="" rest name tilde='~'
+  if [[ "$value" == "$tilde" ]]; then
+    value="$HOME"
+  elif [[ "$value" == "$tilde/"* ]]; then
+    value="$HOME/${value:2}"
+  fi
+  rest="$value"
+  while [[ "$rest" == *'$'* ]]; do
+    out="$out${rest%%\$*}"
+    rest="${rest#*\$}"
+    name=""
+    if [[ "$rest" == '{'* ]]; then
+      rest="${rest#\{}"
+      name="${rest%%\}*}"
+      rest="${rest#*\}}"
+    elif [[ "$rest" == [A-Za-z_]* ]]; then
+      while [[ -n "$rest" && "$rest" == [A-Za-z0-9_]* ]]; do
+        name="$name${rest:0:1}"
+        rest="${rest:1}"
+      done
+    fi
+    if [[ -n "$name" ]]; then
+      out="$out${!name}"
+    else
+      out="$out\$"
+    fi
+  done
+  printf '%s' "$out$rest"
+  return 0
+}
+
 # Run mode: dispatch the item action.
 if [[ "$mode" == "run" ]]; then
   action="${query%% *}"
   payload="${query#"$action"}"
   payload="${payload# }"
   case "$action" in
-    open)        open "$payload"; record_open "$payload" ;;
+    open)        open "$(expand_path "$payload")"; record_open "$payload" ;;
     delete)      rm -f "$payload"; alfred_search "jump " ;;
     pin)         pin_link "$payload"; alfred_search "jump " ;;
     unpin)       unpin_link "$payload"; alfred_search "jump " ;;

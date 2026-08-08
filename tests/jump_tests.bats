@@ -82,10 +82,25 @@ setup() {
   [ ! -f "$LINKS/work/Jira.md" ]
 }
 
-@test "jump.sh: run open dispatches to open" {
+@test "jump.sh: run open dispatches to open, leaving a url unchanged" {
   export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
-  run bash -c '. src/jump.sh run "open https://jira.example.com"'
-  grep -q "https://jira.example.com" "$OPEN_LOG"
+  run bash -c '. src/jump.sh run "open https://jira.example.com/path"'
+  grep -qxF "https://jira.example.com/path" "$OPEN_LOG"
+}
+
+@test "jump.sh: run open expands a leading tilde" {
+  export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
+  run bash -c '. src/jump.sh run "open ~/project"'
+  grep -qxF "$HOME/project" "$OPEN_LOG"
+}
+
+@test "jump.sh: run open expands environment variables" {
+  export OPEN_LOG="$BATS_TEST_TMPDIR/open.log"
+  export MYVAR=/tmp/xyz
+  run bash -c '. src/jump.sh run "open \$MYVAR/a"'
+  grep -qxF "/tmp/xyz/a" "$OPEN_LOG"
+  run bash -c '. src/jump.sh run "open \${MYVAR}/b"'
+  grep -qxF "/tmp/xyz/b" "$OPEN_LOG"
 }
 
 @test "jump.sh: run edit-folder opens the config in an editor" {
