@@ -16,6 +16,7 @@ All notable changes to this workflow are documented here. The format follows
 - Renovate pins GitHub Actions by commit digest.
 - `SECURITY.md` links to the advisory form of this repository.
 - The kcov coverage image is pinned by digest, and Renovate keeps it current.
+- Releases carry a signed build provenance bundle (`*.intoto.jsonl`).
 
 ### Added
 

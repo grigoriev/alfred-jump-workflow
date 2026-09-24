@@ -22,6 +22,16 @@ from Alfred.
 2. Under **Assets**, download `Jump.alfredworkflow`.
 3. Double click the file to add it to Alfred.
 
+### Verify
+
+Each release carries `Jump.alfredworkflow.intoto.jsonl`, a signed build
+provenance bundle. Check that this repository's release workflow built the
+download:
+
+```sh
+gh attestation verify Jump.alfredworkflow --repo grigoriev/alfred-jump-workflow
+```
+
 ## Usage
 
 ```
