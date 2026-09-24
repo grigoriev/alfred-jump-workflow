@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/grigoriev/alfred-jump-workflow)](https://github.com/grigoriev/alfred-jump-workflow/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=grigoriev_alfred-jump-workflow&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=grigoriev_alfred-jump-workflow)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=grigoriev_alfred-jump-workflow&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=grigoriev_alfred-jump-workflow)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=grigoriev_alfred-jump-workflow&metric=coverage)](https://sonarcloud.io/summary/new_code?id=grigoriev_alfred-jump-workflow)
 
 Store many links with tags and categories in plain files, and open them fast
@@ -153,6 +153,10 @@ make icons    # regenerate PNG icons from Octicons (macOS, needs librsvg)
 ```
 
 Icons come from [Octicons](https://github.com/primer/octicons) (MIT).
+
+## Contributing
+
+Issues and pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Disclaimer
 
