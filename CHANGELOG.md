@@ -15,10 +15,15 @@ All notable changes to this workflow are documented here. The format follows
 - Shell steps read workflow expressions from environment variables.
 - Renovate pins GitHub Actions by commit digest.
 - `SECURITY.md` links to the advisory form of this repository.
+- The kcov coverage image is pinned by digest, and Renovate keeps it current.
 
 ### Added
 
 - Disclaimer and License sections in the README.
+
+### Fixed
+
+- CI runs once per commit on a Renovate branch; a second push run blocked the automerge.
 
 Earlier releases are listed on the
 [GitHub releases page](https://github.com/grigoriev/alfred-jump-workflow/releases).
