@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/grigoriev/alfred-jump-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/grigoriev/alfred-jump-workflow/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/grigoriev/alfred-jump-workflow/badge)](https://scorecard.dev/viewer/?uri=github.com/grigoriev/alfred-jump-workflow)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14798/badge)](https://www.bestpractices.dev/projects/14798)
 [![Release](https://img.shields.io/github/v/release/grigoriev/alfred-jump-workflow)](https://github.com/grigoriev/alfred-jump-workflow/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
